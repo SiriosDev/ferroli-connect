@@ -7,8 +7,10 @@ cloud (so the official app keeps working), and controls the setpoint.
 from __future__ import annotations
 
 import logging
+import ssl
 from datetime import timedelta
 
+import certifi
 import paho.mqtt.client as paho
 
 from homeassistant.components import mqtt
@@ -20,6 +22,7 @@ from homeassistant.helpers.storage import Store
 
 from . import protocol
 from .const import (
+    BRIDGE_TLS_HOSTNAME,
     CONF_BRIDGE_ENABLED,
     CONF_BRIDGE_HOST,
     CONF_BRIDGE_PORT,
@@ -29,7 +32,7 @@ from .const import (
     DEFAULT_BRIDGE_HOST,
     DEFAULT_BRIDGE_PORT,
     DOMAIN,
-    IN_TOPICS,
+    IN_TOPIC_KINDS,
     OUT_TOPICS,
     PLATFORMS,
     SIGNAL_UPDATE,
@@ -40,6 +43,39 @@ _LOGGER = logging.getLogger(__name__)
 # El receptor solo emite su estado cada 1-2 min por su cuenta; sondeamos
 # periodicamente para que el estado (caldera, temperaturas) este fresco.
 POLL_INTERVAL = timedelta(seconds=30)
+
+# Plain MQTT port of older entries; the bridge now always uses TLS.
+_LEGACY_PLAIN_PORT = 1883
+
+
+class _FixedHostnameContext(ssl.SSLContext):
+    """SSL context that verifies the broker against a fixed hostname.
+
+    The bridge connects by IP because the broker's hostname is redirected to
+    Home Assistant on the local network, so paho's server_hostname (the IP)
+    is replaced by the real name for SNI and certificate verification.
+    """
+
+    tls_hostname = BRIDGE_TLS_HOSTNAME
+
+    def wrap_socket(self, sock, server_side=False, do_handshake_on_connect=True,
+                    suppress_ragged_eofs=True, server_hostname=None, session=None):
+        return super().wrap_socket(
+            sock,
+            server_side=server_side,
+            do_handshake_on_connect=do_handshake_on_connect,
+            suppress_ragged_eofs=suppress_ragged_eofs,
+            server_hostname=self.tls_hostname,
+            session=session,
+        )
+
+
+def _bridge_ssl_context() -> ssl.SSLContext:
+    """Verified TLS client context (certifi CAs, like homeassistant.util.ssl)."""
+    context = _FixedHostnameContext(ssl.PROTOCOL_TLS_CLIENT)  # CERT_REQUIRED + check_hostname
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.load_verify_locations(cafile=certifi.where())
+    return context
 
 
 class FerroliRuntime:
@@ -52,9 +88,14 @@ class FerroliRuntime:
         self.prefix: str = self.cid[:10]
         self.password: str = entry.data[CONF_PASSWORD]
         self.owner_slug: str = entry.data.get(CONF_OWNER_SLUG) or ""
-        self.bridge_enabled: bool = entry.data.get(CONF_BRIDGE_ENABLED, True)
+        # opt-in, and pointless without the device password
+        self.bridge_enabled: bool = bool(
+            entry.data.get(CONF_BRIDGE_ENABLED, False) and self.password
+        )
         self.bridge_host: str = entry.data.get(CONF_BRIDGE_HOST, DEFAULT_BRIDGE_HOST)
         self.bridge_port: int = entry.data.get(CONF_BRIDGE_PORT, DEFAULT_BRIDGE_PORT)
+        if self.bridge_port == _LEGACY_PLAIN_PORT:
+            self.bridge_port = DEFAULT_BRIDGE_PORT
         self.state: dict = {}
         self.thermo_id: str | None = None
         self.boiler_id: str | None = None
@@ -173,22 +214,52 @@ class FerroliRuntime:
     def _start_bridge(self) -> None:
         client = paho.Client(paho.CallbackAPIVersion.VERSION2, client_id=self.cid)
         client.username_pw_set(self.cid, self.password)
+        client.tls_set_context(_bridge_ssl_context())
         client.on_connect = self._tb_on_connect
         client.on_message = self._tb_on_message
         try:
             client.connect(self.bridge_host, self.bridge_port, 30)
-        except OSError as err:
+        except (OSError, ssl.SSLError) as err:
             _LOGGER.warning("Topband bridge connect failed: %s", err)
             return
         client.loop_start()
         self._tb = client
-        _LOGGER.info("Topband bridge started (clientid %s)", self.cid)
+        _LOGGER.info(
+            "Topband bridge started over TLS (%s:%s, clientid %s)",
+            self.bridge_host, self.bridge_port, self.cid,
+        )
+
+    def _bridge_topics(self) -> list[str]:
+        """Cloud topics addressed to this device only."""
+        return [
+            f"/app2dev/{self.prefix}/{self.cid}/#",
+            f"/ser2dev_res/{self.prefix}/{self.cid}/#",
+            f"/ser2dev_noti/{self.prefix}",
+            f"/ser2dev_noti/{self.prefix}/{self.cid}/#",
+        ]
+
+    def _relay_allowed(self, topic: str) -> bool:
+        """Only relay device-bound topics of this receiver (never arbitrary ones)."""
+        parts = topic.split("/")
+        if len(parts) < 3 or parts[0] or parts[1] not in IN_TOPIC_KINDS:
+            return False
+        if parts[2] != self.prefix:
+            return False
+        if len(parts) == 3:
+            return parts[1] == "ser2dev_noti"  # product-wide notification
+        return parts[3] == self.cid
 
     def _tb_on_connect(self, client, userdata, flags, rc, props=None) -> None:
-        for topic in IN_TOPICS:
+        if rc.is_failure:
+            _LOGGER.warning("Topband bridge refused: %s", rc)
+            return
+        for topic in self._bridge_topics():
             client.subscribe(topic)
 
     def _tb_on_message(self, client, userdata, msg) -> None:
+        if not self._relay_allowed(msg.topic):
+            _LOGGER.debug("Topband bridge: dropped unexpected topic %s", msg.topic)
+            return
         # relay cloud -> device onto the local broker (thread-safe)
         self.hass.add_job(mqtt.async_publish, self.hass, msg.topic, msg.payload)
 

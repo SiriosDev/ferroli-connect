@@ -3,7 +3,7 @@
     "step": {
       "confirm": {
         "title": "Ferroli Connect",
-        "description": "Auto-discovered device: {cid}. The client id was learned from the receiver's MQTT traffic. The owner slug and control are also learned automatically (you can leave them blank). The password is only needed to keep the official app working (cloud bridge); leave it blank for Home-Assistant-only control.",
+        "description": "Auto-discovered device: {cid}. The client id was learned from the receiver's MQTT traffic. The owner slug and control are also learned automatically (you can leave them blank). The password is only needed to keep the official app working (cloud bridge); leave it blank for Home-Assistant-only control. The bridge is off by default: when enabled, the client id, password and boiler data leave your local network to the Topband broker, encrypted with TLS (port 8883, verified certificate).",
         "data": {
           "client_id": "Device client id / username",
           "password": "Device MQTT password (optional, cloud bridge)",

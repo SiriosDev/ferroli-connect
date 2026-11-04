@@ -51,7 +51,7 @@ class FerroliConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_CLIENT_ID: cid,
                     CONF_OWNER_SLUG: (user_input.get(CONF_OWNER_SLUG) or "").strip(),
                     CONF_PASSWORD: user_input.get(CONF_PASSWORD) or "",
-                    CONF_BRIDGE_ENABLED: user_input.get(CONF_BRIDGE_ENABLED, True),
+                    CONF_BRIDGE_ENABLED: user_input.get(CONF_BRIDGE_ENABLED, False),
                     CONF_BRIDGE_HOST: user_input.get(CONF_BRIDGE_HOST)
                     or DEFAULT_BRIDGE_HOST,
                 }
@@ -71,7 +71,7 @@ class FerroliConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_OWNER_SLUG, default=self._found.get("owner_slug") or ""
                 ): str,
                 vol.Optional(CONF_PASSWORD, default=""): str,
-                vol.Optional(CONF_BRIDGE_ENABLED, default=True): bool,
+                vol.Optional(CONF_BRIDGE_ENABLED, default=False): bool,
                 vol.Optional(CONF_BRIDGE_HOST, default=DEFAULT_BRIDGE_HOST): str,
             }
         )

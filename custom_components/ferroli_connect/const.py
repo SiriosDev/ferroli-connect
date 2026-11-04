@@ -12,12 +12,16 @@ CONF_BRIDGE_HOST = "bridge_host"
 CONF_BRIDGE_PORT = "bridge_port"
 
 DEFAULT_BRIDGE_HOST = "18.158.187.64"
-DEFAULT_BRIDGE_PORT = 1883
+# MQTT over TLS. The broker's certificate is checked against BRIDGE_TLS_HOSTNAME:
+# we connect by IP because that hostname is redirected to Home Assistant locally.
+DEFAULT_BRIDGE_PORT = 8883
+BRIDGE_TLS_HOSTNAME = "eu-mqtt.topband-cloud.com"
 
 # dispatcher signal (format with entry_id)
 SIGNAL_UPDATE = "ferroli_connect_update_{}"
 
 # device -> cloud (relayed local broker -> Topband)
 OUT_TOPICS = ["/dev_realt/#", "/dev2app/#", "/dev2ser_req_info/#"]
-# cloud -> device (relayed Topband -> local broker)
-IN_TOPICS = ["/app2dev/#", "/ser2dev_noti/#", "/ser2dev_res/#"]
+# cloud -> device (relayed Topband -> local broker); only this device's topics
+# are subscribed and relayed, see FerroliRuntime._relay_allowed
+IN_TOPIC_KINDS = ("app2dev", "ser2dev_noti", "ser2dev_res")

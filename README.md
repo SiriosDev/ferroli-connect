@@ -17,8 +17,9 @@ official app working by bridging the device to the Topband cloud.
 - **Thermostat** (`climate`): room temperature, setpoint and setpoint control.
 - **Sensors**: flow temperature, DHW (hot water) temperature, DHW flow,
   boiler state (Off / Heating / Hot water), plus diagnostic values.
-- **Optional cloud bridge**: the integration relays the device ↔ Topband so the
-  official Ferroli app keeps working.
+- **Optional cloud bridge** (off by default): the integration relays the
+  device ↔ Topband so the official Ferroli app keeps working. See
+  [Cloud bridge and privacy](#cloud-bridge-and-privacy).
 
 ## Screenshots
 
@@ -138,8 +139,22 @@ the command topic: `/app2dev/<prefix>/<cid>/<ts>_<owner_slug>$of$...`.
 | Device client id / username | the receiver's client id (auto-discovered from the broker) |
 | Device MQTT password | the receiver's MQTT password |
 | Owner slug | the UUID from the `/app2dev/.../<ts>_<owner_slug>$of$...` topic |
-| Keep the official app working | enable the Topband bridge |
+| Keep the official app working | enable the Topband bridge (off by default) |
 | Cloud broker IP | Topband broker IP (default works for the EU region) |
+
+## Cloud bridge and privacy
+
+The bridge is **opt-in** and only starts when the device password is set.
+When it is enabled, the receiver's client id and password and all boiler
+telemetry and commands **leave your local network** to the Topband broker.
+That connection uses **MQTT over TLS** (port 8883) and the broker certificate
+is verified against `eu-mqtt.topband-cloud.com` (the bridge connects by IP,
+since that name is redirected to Home Assistant on your network).
+
+From the cloud, only topics addressed to your receiver are relayed to your
+local broker (`/app2dev/<prefix>/<cid>/…`, `/ser2dev_res/<prefix>/<cid>`,
+`/ser2dev_noti/<prefix>[/<cid>]`); anything else is dropped. Leave the bridge
+off if you only control the boiler from Home Assistant.
 
 ## Notes & disclaimer
 

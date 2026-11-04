@@ -3,7 +3,7 @@
     "step": {
       "confirm": {
         "title": "Ferroli Connect",
-        "description": "Dispositivo detectado automáticamente: {cid}. El client id se aprendió del tráfico del receptor. El owner slug y el control también se aprenden solos (puedes dejarlos en blanco). La contraseña solo hace falta para mantener la app oficial (bridge a la nube); déjala en blanco para controlar solo desde Home Assistant.",
+        "description": "Dispositivo detectado automáticamente: {cid}. El client id se aprendió del tráfico del receptor. El owner slug y el control también se aprenden solos (puedes dejarlos en blanco). La contraseña solo hace falta para mantener la app oficial (bridge a la nube); déjala en blanco para controlar solo desde Home Assistant. El bridge está desactivado por defecto: si lo activas, el client id, la contraseña y los datos de la caldera salen de tu red local hacia el broker de Topband, cifrados con TLS (puerto 8883, certificado verificado).",
         "data": {
           "client_id": "Client id / usuario del dispositivo",
           "password": "Contraseña MQTT (opcional, bridge a la nube)",
