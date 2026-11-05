@@ -40,8 +40,9 @@ custom_components/ferroli_connect_mqtt/
 Optional dark-mode variants are also supported: `dark_icon.png`,
 `dark_logo.png`, `dark_icon@2x.png`, `dark_logo@2x.png`.
 
-The helper `tools/make_brand_assets.py` regenerates them from a source logo
-(needs Pillow): `python tools/make_brand_assets.py path/to/ferroli-logo.png`.
+The helper `tools/make_brand_assets.py` regenerates them in place from the
+source logo `tools/ferroli-f-transparent.png` (needs Pillow):
+`python tools/make_brand_assets.py`.
 
 > Note: the Ferroli name and logo are trademarks of Ferroli S.p.A. and are used
 > here only for identification; this project is not affiliated with or endorsed

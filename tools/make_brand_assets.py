@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Generate home-assistant/brands images from a source Ferroli logo.
+"""Generate the integration's brand images from a source Ferroli logo.
 
 Usage:
-    python tools/make_brand_assets.py path/to/ferroli-logo.png [out_dir]
+    python tools/make_brand_assets.py [source.png] [out_dir]
 
-Produces, in <out_dir> (default ./brand_assets):
+source.png defaults to tools/ferroli-f-transparent.png. Produces, in <out_dir>
+(default custom_components/ferroli_connect_mqtt/brand, which Home Assistant
+2026.3+ reads directly):
     icon.png        256x256   (square, transparent, trimmed + padded)
     icon@2x.png     512x512
     logo.png        <=256 tall (wordmark, transparent, trimmed)
     logo@2x.png     <=512 tall
 
-Then copy them into home-assistant/brands under
-custom_integrations/ferroli_connect_mqtt/ and open a PR.
 Requires Pillow.
 """
 from __future__ import annotations
@@ -20,6 +20,10 @@ import sys
 from pathlib import Path
 
 from PIL import Image
+
+ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_SOURCE = ROOT / "tools" / "ferroli-f-transparent.png"
+DEFAULT_OUT = ROOT / "custom_components" / "ferroli_connect_mqtt" / "brand"
 
 
 def trim(img: Image.Image) -> Image.Image:
@@ -51,11 +55,11 @@ def make_icon(src: Image.Image, size: int) -> Image.Image:
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
+    if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help"):
         print(__doc__)
-        return 1
-    src_path = Path(sys.argv[1])
-    out_dir = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("brand_assets")
+        return 0
+    src_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_SOURCE
+    out_dir = Path(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_OUT
     out_dir.mkdir(parents=True, exist_ok=True)
 
     src = trim(Image.open(src_path))
