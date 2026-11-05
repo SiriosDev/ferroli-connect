@@ -4,7 +4,7 @@ Steps to take this from a local folder to a public HACS integration.
 
 ## 1. Fill in the placeholders
 
-In `custom_components/ferroli_connect/manifest.json` replace every `CHANGEME`
+In `custom_components/ferroli_connect_mqtt/manifest.json` replace every `CHANGEME`
 with your GitHub account / repo:
 
 ```json
@@ -28,7 +28,7 @@ The images live in a `brand/` folder next to `manifest.json` (already included
 in this repo):
 
 ```
-custom_components/ferroli_connect/
+custom_components/ferroli_connect_mqtt/
 ├── manifest.json
 └── brand/
     ├── icon.png      (256×256, transparent)

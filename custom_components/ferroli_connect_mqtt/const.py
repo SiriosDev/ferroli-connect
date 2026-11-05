@@ -1,7 +1,7 @@
 """Constants for the Ferroli Connect integration."""
 from __future__ import annotations
 
-DOMAIN = "ferroli_connect"
+DOMAIN = "ferroli_connect_mqtt"
 PLATFORMS = ["climate", "sensor"]
 
 CONF_CLIENT_ID = "client_id"
@@ -18,7 +18,7 @@ DEFAULT_BRIDGE_PORT = 8883
 BRIDGE_TLS_HOSTNAME = "eu-mqtt.topband-cloud.com"
 
 # dispatcher signal (format with entry_id)
-SIGNAL_UPDATE = "ferroli_connect_update_{}"
+SIGNAL_UPDATE = "ferroli_connect_mqtt_update_{}"
 
 # device -> cloud (relayed local broker -> Topband)
 OUT_TOPICS = ["/dev_realt/#", "/dev2app/#", "/dev2ser_req_info/#"]

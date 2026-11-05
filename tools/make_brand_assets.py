@@ -11,7 +11,7 @@ Produces, in <out_dir> (default ./brand_assets):
     logo@2x.png     <=512 tall
 
 Then copy them into home-assistant/brands under
-custom_integrations/ferroli_connect/ and open a PR.
+custom_integrations/ferroli_connect_mqtt/ and open a PR.
 Requires Pillow.
 """
 from __future__ import annotations

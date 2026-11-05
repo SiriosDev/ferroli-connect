@@ -130,7 +130,24 @@ the command topic: `/app2dev/<prefix>/<cid>/<ts>_<owner_slug>$of$...`.
 1. HACS → ⋮ → *Custom repositories* → add this repo as an **Integration**.
 2. Install **Ferroli Connect**, then restart Home Assistant.
 3. *Settings → Devices & services → Add integration → Ferroli Connect* and fill
-   in the credentials.
+   in the credentials, or use this link:
+
+   [![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ferroli_connect_mqtt)
+
+The integration domain is `ferroli_connect_mqtt` (files in
+`custom_components/ferroli_connect_mqtt/`).
+
+### Upgrading from 0.5.x or earlier
+
+Up to 0.5.0 the domain was `ferroli_connect`. Home Assistant treats the renamed
+integration as a new one, so after updating:
+
+1. Delete the old *Ferroli Connect* entry in *Settings → Devices & services*
+   and remove `custom_components/ferroli_connect/`.
+2. Restart Home Assistant and add the integration again (the receiver is
+   auto-discovered; re-enter the device password only if you use the bridge).
+3. Deleting the old entry first lets the new entities get the same entity IDs,
+   so dashboards, automations and history keep working.
 
 ## Configuration
 
