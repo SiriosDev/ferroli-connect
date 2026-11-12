@@ -1,0 +1,41 @@
+{
+  "config": {
+    "step": {
+      "confirm": {
+        "title": "Ferroli Connect",
+        "description": "Dispositivo rilevato automaticamente: {cid}. L'ID client è stato ricavato dal traffico MQTT del ricevitore. Anche l'Owner Slug e il Comando di Controllo vengono rilevati automaticamente (è possibile lasciarli vuoti). La password è necessaria solo per garantire il funzionamento dell'app ufficiale (Bridge al Cloud); lasciarla vuota per il controllo esclusivamente tramite Home Assistant. Il bridge è disattivato per impostazione predefinita: quando è abilitato, l'ID client, la password e i dati della caldaia escono dalla rete locale per raggiungere il broker Topband, crittografati con TLS (Porta 8883, Certificato Verificato).",
+        "data": {
+          "client_id": "Client ID / Username del Dispositivo",
+          "password": "Password MQTT del Dispositivo (Opzionale, Bridge al Cloud)",
+          "owner_slug": "Owner Slug (Opzionale, Auto-generato)",
+          "bridge_enabled": "Mantieni l'app ufficiale funzionante (Bridge al Cloud)",
+          "bridge_host": "IP del Cloud broker (Topband)"
+        }
+      }
+    },
+    "error": {
+      "no_client_id": "Non è stato rilevato alcun ricevitore sul broker. Assicurati che eu-mqtt.topband-cloud.com sia reindirizzato a Home Assistant e che il ricevitore sia collegato, quindi invia nuovamente la richiesta."
+    },
+    "abort": {
+      "already_configured": "Questo dispositivo è già configurato"
+    }
+  },
+  "entity": {
+    "climate": {
+      "thermostat": { "name": "Termostato" }
+    },
+    "sensor": {
+      "room_temp": { "name": "Temperatura della Stanza" },
+      "setpoint": { "name": "Setpoint" },
+      "flow_temp": { "name": "Temperatura di Mandata" },
+      "dhw_temp": { "name": "Temperatura ACS" },
+      "dhw_flow": { "name": "Mandata ACS" },
+      "boiler_state": {
+        "name": "Stato della Caldaia",
+        "state": { "off": "Spento", "heating": "Riscaldamento", "dhw": "Acqua Calda", "on": "Acceso" }
+      },
+      "mode": { "name": "Modalità del Termostato" },
+      "boiler_setpoint": { "name": "Setpoint della Caldaia" }
+    }
+  }
+}
